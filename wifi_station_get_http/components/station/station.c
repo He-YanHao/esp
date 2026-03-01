@@ -6,6 +6,7 @@
 #include "esp_wifi.h"
 #include "esp_event.h"
 #include "esp_log.h"
+#include "esp_http_client.h"
 
 #include "lwip/err.h"
 #include "lwip/sys.h"
@@ -27,11 +28,12 @@
 /* FreeRTOS event group to signal when we are connected*/
 // 创建一个事件组来标志连接状态，事件组允许多个事件位。
 static EventGroupHandle_t s_wifi_event_group;
-
+// 最大重试次数
 static int s_retry_num = 0;
-
+// 日志标签
 static const char *TAG = "wifi station";
 
+// WiFi 事件处理程序，处理 WiFi 事件和 IP 事件
 static void event_handler(void* arg, esp_event_base_t event_base,
                                 int32_t event_id, void* event_data)
 {
@@ -135,4 +137,48 @@ esp_err_t wifi_init_station(void)
         ESP_LOGE(TAG, "UNEXPECTED EVENT");
     }
     return ESP_OK;
+}
+
+/**
+ * HTTP 事件处理程序，处理 HTTP 事件
+ * 这里只处理了 HTTP_EVENT_ON_DATA 事件，当接收到数据时打印数据内容
+ * 其他事件（如连接、断开、错误等）可以根据需要添加处理
+ */
+static esp_err_t http_event_handler(esp_http_client_event_t *evt)
+{
+    switch(evt->event_id) {
+
+        case HTTP_EVENT_ON_DATA:
+            printf("%.*s", evt->data_len, (char*)evt->data);
+            break;
+
+        default:
+            break;
+    }
+    return ESP_OK;
+}
+
+/**
+ * HTTP GET 请求测试函数
+ */
+void http_get_test(void)
+{
+    esp_http_client_config_t config = {
+        .url = "http://192.168.1.164:8000/TestDocu.txt",
+        .event_handler = http_event_handler,
+    };
+
+    esp_http_client_handle_t client = esp_http_client_init(&config);
+
+    esp_err_t err = esp_http_client_perform(client);
+
+    if (err == ESP_OK) {
+        ESP_LOGI("HTTP", "Status = %d",
+                 esp_http_client_get_status_code(client));
+    } else {
+        ESP_LOGE("HTTP", "Request failed: %s",
+                 esp_err_to_name(err));
+    }
+
+    esp_http_client_cleanup(client);
 }

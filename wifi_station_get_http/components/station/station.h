@@ -7,6 +7,7 @@ extern "C"
 #endif
 
 esp_err_t wifi_init_station(void);
+void http_get_test(void);
 
 #ifdef __cplusplus
 }

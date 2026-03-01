@@ -63,4 +63,8 @@ void app_main(void)
 
     // 初始化WiFi连接
     wifi_init_station();
+    // 等待WiFi连接稳定
+    vTaskDelay(500 / portTICK_PERIOD_MS);
+    // 进行HTTP GET请求测试
+    http_get_test();
 }
