@@ -1,0 +1,12 @@
+# ESP-IDF Partition Table
+# Name,     Type,   SubType,  Offset,    Size,    Flags
+# 用户参数NVS分区 (可读写 存储用户配置 WiFi配置 BLE配置等)
+nvs,        data,   nvs,      0x9000,    16K,
+# OTA数据分区 (AB分区方式 记录当前使用的OTA分区)
+otadata,    data,   ota,      0xD000,    8K,
+# PHY初始化数据分区 (WiFi/BLE校准数据 固定4KB)
+phy_init,   data,   phy,      0xF000,    4K,
+# OTA应用分区A
+ota_0,      app,    ota_0,    0x100000,  0x380000,
+# OTA应用分区B
+ota_1,      app,    ota_1,    0x480000,  0x380000,
